@@ -75,6 +75,19 @@ section.alt{background:#fff;border-top:1px solid var(--line);border-bottom:1px s
 .card ul{margin:0;padding-left:18px;color:#475569;font-size:13.5px;line-height:2}
 .card .tagline{font-size:13px;color:var(--brand);background:var(--soft);border-radius:8px;padding:8px 12px;margin-top:14px}
 
+/* 试用入口 */
+.try{display:flex;align-items:center;gap:14px;margin-top:18px;padding-top:18px;border-top:1px dashed var(--line)}
+.qr{width:96px;height:96px;flex:none;border:1px solid var(--line);border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.qr img{width:100%;height:100%;object-fit:contain}
+.qr-ph{font-size:12px;color:#94a3b8;text-align:center;line-height:1.5}
+.try-icon{width:96px;height:96px;flex:none;border-radius:10px;background:linear-gradient(135deg,var(--soft),#e7f6f2);display:flex;align-items:center;justify-content:center;font-size:38px}
+.try-info{min-width:0}
+.try-t{font-weight:700;font-size:14.5px;margin-bottom:4px}
+.try-info p{font-size:12.5px;color:var(--muted);margin:0 0 10px}
+.try-note{font-size:11px;color:#94a3b8}
+.try-btn{display:inline-block;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;background:var(--brand2);color:#fff}
+.try-btn:hover{background:#0c5f59}
+
 /* features */
 .feat{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 @media(max-width:860px){.feat{grid-template-columns:repeat(2,1fr)}}
@@ -174,9 +187,9 @@ footer .disc{border-top:1px solid #1e293b;margin-top:18px;padding-top:16px;color
 <section id="products" class="alt">
   <div class="wrap">
     <div class="sec-head">
-      <div class="kicker">Two clients</div>
-      <h2>同一名称，两种形态</h2>
-      <p>微信小程序与网页版均命名为「Eye检查记录助手」。网页版首页采用「简洁汇总」视图，两者共用同一套指标口径与展示逻辑。</p>
+      <div class="kicker">Choose your way</div>
+      <h2>两种使用方式，随手记录眼睛的变化</h2>
+      <p>在手机上拍照上传，随时随地记下每一次检查；在电脑上批量整理，生成清晰的时间线汇总。无论用哪种方式，看到的指标和展示方式都一样，换设备也不用重新适应。</p>
     </div>
     <div class="cards">
       <div class="card">
@@ -191,19 +204,35 @@ footer .disc{border-top:1px solid #1e293b;margin-top:18px;padding-top:16px;color
           <li>「获取原始报告」：同日图片合成一张长图，PDF 逐个打开</li>
         </ul>
         <div class="tagline">适合：家长日常随手记录、多设备查看</div>
+        <div class="try">
+          <div class="qr"><img src="assets/mini-qrcode.png" alt="扫码体验 Eye检查记录助手 微信小程序" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><div class="qr-ph" style="display:none">小程序<br>二维码</div></div>
+          <div class="try-info">
+            <div class="try-t">微信扫码 · 立即体验</div>
+            <p>扫一扫打开小程序，拍照上传第一份检查报告。</p>
+            <span class="try-note">首次使用需添加为体验成员</span>
+          </div>
+        </div>
       </div>
       <div class="card">
         <div class="ic teal">▤</div>
         <h3>Eye检查记录助手 · 网页版简洁汇总</h3>
-        <div class="sub">本地或服务器部署，批量整理</div>
+        <div class="sub">浏览器打开即用，与小程序共用云端数据</div>
         <ul>
-          <li>拖拽多份报告，OCR + 规则抽取结构化指标</li>
+          <li>拖拽多份报告，大模型 + 规则抽取结构化指标</li>
           <li>时间线矩阵：同一天合并为一列，指标名独立一行</li>
           <li>散瞳标记、远视储备、眼轴年增长与首末变化</li>
-          <li>趋势曲线、原值明细、就诊出示只读链接</li>
-          <li>原始数据留在本机，不上传第三方</li>
+          <li>趋势曲线、原值明细、按日期合并原始报告</li>
+          <li>手机号登录后与小程序共用同一份档案，按用户隔离</li>
         </ul>
         <div class="tagline">适合：批量归档、深度核对、就诊前打印</div>
+        <div class="try">
+          <div class="try-icon">🌐</div>
+          <div class="try-info">
+            <div class="try-t">浏览器打开 · 立即体验</div>
+            <p>无需安装，打开即可查看演示汇总；手机号登录后上传的报告存入云端，小程序同步可见。</p>
+            <a class="try-btn" href="https://eye-health-records.app.workbuddy.host/?sharecode=Z3Y3IYCQB7" target="_blank" rel="noopener">打开网页版 →</a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -257,7 +286,7 @@ footer .disc{border-top:1px solid #1e293b;margin-top:18px;padding-top:16px;color
     <div class="box">
       <h3>隐私与安全</h3>
       <ul>
-        <li>网页版原始报告与数据库保存在本地，不上传第三方</li>
+        <li>未登录为演示模式；登录后网页版与小程序共用云端，按用户隔离（RLS）</li>
         <li>小程序登录后数据存入云端，按用户身份隔离（RLS）</li>
         <li>原始文件按用户目录存储，删除档案时级联删除</li>
         <li>明示同意的隐私政策、删除权与免责说明</li>
