@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>eye报告助手 · 上传即出汇总</title>
+<style>
+:root{--bg:#f2f5fa;--card:#fff;--ink:#1f2937;--sub:#64748b;--line:#e5eaf1;--pri:#1e40af;--priL:#eaf0ff;--teal:#0f766e;--warn:#b45309;--danger:#b91c1c;--ok:#047857}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-size:15px;line-height:1.65}
+.hero{background:linear-gradient(135deg,#16307a,#1e40af 55%,#0f766e);color:#fff;padding:30px 20px 26px;text-align:center}
+.hero h1{font-size:23px;margin:0 0 6px}.hero p{margin:0;opacity:.9;font-size:13.5px}
+.hero .chip{display:inline-block;font-size:11px;background:rgba(255,255,255,.2);padding:3px 11px;border-radius:12px;margin-top:11px}
+.wrap{max-width:820px;margin:0 auto;padding:20px 16px 70px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 20px;margin-bottom:14px;box-shadow:0 2px 10px rgba(30,64,175,.04)}
+.card h3{margin:0 0 14px;font-size:16px;display:flex;align-items:center;gap:8px}
+.sub{color:var(--sub);font-size:12.5px}
+label{display:block;font-size:12.5px;color:var(--sub);margin:12px 0 5px}
+input,select{border:1px solid var(--line);border-radius:9px;padding:10px 12px;width:100%;font-size:14px;font-family:inherit;background:#fff;color:var(--ink)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:560px){.row{grid-template-columns:1fr}}
+.drop{border:2px dashed #b9c7e0;border-radius:14px;padding:34px 18px;text-align:center;background:#fafcff;cursor:pointer;transition:.15s;margin-top:6px}
+.drop:hover,.drop.over{border-color:var(--pri);background:var(--priL)}
+.drop .big{font-size:40px}.drop b{display:block;margin:8px 0 4px;font-size:15px}
+.btn{display:block;width:100%;border:none;border-radius:11px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;margin-top:16px}
+.btn-p{background:var(--pri);color:#fff}.btn-p:hover{background:#17337f}.btn-p:disabled{background:#93a4c4;cursor:not-allowed}
+.btn-o{background:#fff;color:var(--pri);border:1px solid #c7d3ea}
+.progress{height:7px;background:#e8edf5;border-radius:5px;overflow:hidden;margin:14px 0}.progress i{display:block;height:100%;background:var(--pri);width:0;transition:width .3s}
+.files{display:flex;flex-direction:column;gap:7px;margin-top:12px}
+.file-chip{display:flex;justify-content:space-between;align-items:center;background:#f6f8fc;border:1px solid var(--line);border-radius:9px;padding:8px 12px;font-size:13px}
+.file-chip .x{color:var(--danger);cursor:pointer;font-weight:700}
+.tag{display:inline-block;font-size:11px;padding:2px 9px;border-radius:10px;background:#eef2f7;color:#475569;white-space:nowrap}
+.tag.ok{background:#e8f6ef;color:var(--ok)}.tag.warn{background:#fff5e8;color:var(--warn)}.tag.high{background:#fdeaea;color:var(--danger)}.tag.info{background:var(--priL);color:var(--pri)}.tag.unknown{background:#eef2f7;color:var(--sub)}
+/* 结论 */
+.verdict{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:560px){.verdict{grid-template-columns:1fr}}
+.vbox{border:1px solid var(--line);border-radius:12px;padding:15px;background:#fbfcfe}
+.vbox .vt{font-size:12px;color:var(--sub);margin-bottom:7px}
+.vbox .vl{font-size:19px;font-weight:800;margin-bottom:6px}
+.vbox .vl.high{color:var(--danger)}.vbox .vl.warn{color:var(--warn)}.vbox .vl.ok{color:var(--ok)}.vbox .vl.info,.vbox .vl.unknown{color:var(--pri)}
+.vbox .vx{font-size:12.5px;color:#475569;line-height:1.6}
+.headline{padding:14px 16px;border-radius:11px;font-weight:600;font-size:14.5px;line-height:1.7;background:linear-gradient(90deg,#eff4ff,#f8fbff);border:1px solid #dbe6fb;color:#1e3a6d;margin-bottom:14px}
+.headline.high{background:#fdf0f0;border-color:#f6d5d5;color:#991b1b}.headline.warn{background:#fff8ec;border-color:#fae3bc;color:#92400e}.headline.ok{background:#f0faf4;border-color:#d6f0e1;color:#065f46}
+/* 指标卡 */
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:560px){.mgrid{grid-template-columns:1fr}}
+.mcard{border:1px solid var(--line);border-radius:11px;padding:12px 14px;background:#fff}
+.mcard .mn{font-size:12.5px;color:var(--sub);display:flex;justify-content:space-between;align-items:center}
+.mcard .mv{display:flex;gap:16px;margin-top:6px;align-items:baseline}
+.mcard .mv .eye{font-size:12px;color:var(--sub);width:34px}
+.mcard .mv b{font-size:19px;font-variant-numeric:tabular-nums}
+.mcard .mv.warn b{color:var(--warn)}.mcard .mv.high b{color:var(--danger)}.mcard .mv.ok b{color:var(--ok)}
+.mcard .mref{font-size:10.5px;color:#94a3b8;margin-top:6px;line-height:1.45}
+/* 处方表 */
+.rxtbl{width:100%;border-collapse:collapse;font-size:13px}
+.rxtbl th,.rxtbl td{border-bottom:1px solid #eef2f7;padding:9px 8px;text-align:center}
+.rxtbl th{background:#f4f7fb;color:#475569;font-size:12px}
+.rxtbl th:first-child,.rxtbl td:first-child{text-align:left;font-weight:600}
+.notice{border-left:4px solid var(--warn);background:#fff8ec;padding:10px 13px;border-radius:0 9px 9px 0;font-size:12.5px;color:#7c4a0b;margin:10px 0;line-height:1.65}
+.notice.info{border-color:var(--pri);background:var(--priL);color:#1e3a6d}
+.advice{margin:0;padding-left:20px}.advice li{margin:7px 0;font-size:13.5px;line-height:1.65}
+.disclaimer{font-size:11.5px;color:#94a3b8;text-align:center;line-height:1.7;margin-top:20px}
+.src-list{font-size:12px;color:var(--sub)}.src-list div{padding:4px 0;border-bottom:1px dashed #eef2f7}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid #dbe3ef;border-top-color:var(--pri);border-radius:50%;animation:s 1s linear infinite;vertical-align:-3px}@keyframes s{to{transform:rotate(360deg)}}
+.err{background:#fdeaea;border:1px solid #f6d5d5;color:#991b1b;padding:9px 12px;border-radius:9px;font-size:12.5px;margin:6px 0}
+@media print{.hero,.no-print{display:none!important}.wrap{max-width:none;padding:0}.card{box-shadow:none;break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="hero">
+  <h1>👁️ eye 报告助手</h1>
+  <p>上传检查报告照片，自动整理成看得懂的汇总</p>
+  <div class="chip">健康管理记录 · 不构成医疗诊断</div>
+  <div style="margin-top:12px"><a href="/" style="color:#fff;opacity:.85;font-size:12px">进入专业工作台（建档随访 / 趋势对比 / 就诊出示）→</a></div>
+</div>
+
+<div class="wrap" id="uploadView">
+  <div class="card">
+    <h3>① 填写基本信息 <span class="sub">（年龄帮助判断眼轴、远视储备）</span></h3>
+    <div class="row">
+      <div><label>姓名 / 称呼</label><input id="cName" placeholder="如：乐乐（可不填）"></div>
+      <div><label>出生日期</label><input type="date" id="cBirth"></div>
+    </div>
+    <label>性别</label>
+    <select id="cSex"><option value="U">未知</option><option value="M">男</option><option value="F">女</option></select>
+    <label style="display:flex;align-items:center;gap:8px;margin-top:12px;cursor:pointer">
+      <input type="checkbox" id="cCyclo" style="width:auto;margin:0">
+      <span>本次为散瞳后检查（散瞳度数可用于判断近视与远视储备）</span>
+    </label>
+  </div>
+
+  <div class="card">
+    <h3>② 上传检查报告照片</h3>
+    <div class="drop" id="drop" onclick="document.getElementById('fileInput').click()">
+      <div class="big">📷</div>
+      <b>点击选择，或拖拽照片到这里</b>
+      <div class="sub">支持 JPG / PNG / PDF，可一次选多张（验光单、眼生物测量、电脑验光小票等）</div>
+    </div>
+    <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.bmp,.tif,.tiff,.pdf" style="display:none">
+    <div class="files" id="fileList"></div>
+    <button class="btn btn-p" id="goBtn" onclick="startAnalyze()">上传并生成汇总报告</button>
+    <div class="progress" id="prog" style="display:none"><i id="progBar"></i></div>
+    <div id="errBox"></div>
+  </div>
+
+  <div class="card no-print" style="background:#f8fafc">
+    <div class="sub"><b>目前能识别的检查：</b>验光单（球镜/柱镜/轴位/矫正视力）、眼生物测量（眼轴/角膜曲率/散光/前房深度等）、电脑验光小票（屈光/瞳距/角膜曲率）。<br>
+    <b>提示：</b>报告照片请尽量清晰、平整、避免反光；识别后所有数值请以纸质原件为准，可在报告里对照"来源报告"核验。</div>
+  </div>
+</div>
+
+<div class="wrap" id="reportView" style="display:none"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let files = [];
+
+/* 文件选择 */
+const drop = $('drop');
+drop.addEventListener('dragover', e=>{e.preventDefault();drop.classList.add('over')});
+drop.addEventListener('dragleave', ()=>drop.classList.remove('over'));
+drop.addEventListener('drop', e=>{e.preventDefault();drop.classList.remove('over');addFiles([...e.dataTransfer.files])});
+$('fileInput').addEventListener('change', e=>{addFiles([...e.target.files]);e.target.value=''});
+function addFiles(list){
+  list.forEach(f=>files.push(f));
+  renderFiles();
+}
+function renderFiles(){
+  $('fileList').innerHTML = files.map((f,i)=>`<div class="file-chip"><span>📄 ${esc(f.name)} <span class="sub">(${(f.size/1024).toFixed(0)} KB)</span></span><span class="x" onclick="rmFile(${i})">移除</span></div>`).join('');
+  $('goBtn').disabled = files.length===0;
+}
+function rmFile(i){ files.splice(i,1); renderFiles(); }
+
+/* 开始分析 */
+async function startAnalyze(){
+  if(!files.length){ alert('请先选择报告照片'); return; }
+  $('errBox').innerHTML='';
+  $('goBtn').disabled=true; $('prog').style.display='block'; $('progBar').style.width='25%';
+  const fd = new FormData();
+  files.forEach(f=>fd.append('files',f));
+  fd.append('child_name',$('cName').value.trim());
+  fd.append('birth_date',$('cBirth').value);
+  fd.append('sex',$('cSex').value);
+  fd.append('cycloplegic',$('cCyclo').checked ? 'true' : 'auto');
+  try{
+    $('progBar').style.width='60%';
+    const r = await fetch('/api/parent/analyze',{method:'POST',body:fd});
+    if(!r.ok) throw new Error((await r.text()).slice(0,300));
+    $('progBar').style.width='100%';
+    const report = await r.json();
+    renderReport(report);
+    setTimeout(()=>{$('prog').style.display='none';$('goBtn').disabled=false},400);
+  }catch(e){
+    $('errBox').innerHTML=`<div class="err">分析失败：${esc(e.message)}。请确认图片清晰后重试。</div>`;
+    $('prog').style.display='none'; $('goBtn').disabled=false;
+  }
+}
+
+/* 渲染报告 */
+function lvTag(level,text){ return `<span class="tag ${level}">${esc(text)}</span>`; }
+function renderReport(r){
+  const v = r.verdict||{}, my=v.myopia||{}, ast=v.astigmatism||{}, ov=v.overall||{};
+  const child = r.child||{};
+  let h = '';
+
+  h += `<div class="card no-print" style="background:#f0faf4;border-color:#d6f0e1">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <div><b style="color:#065f46">✓ 报告已生成</b><div class="sub">${esc(child.name||'本次检查')}${child.age!=null?' · '+child.age+' 岁':''} · 检查日期 ${esc(r.exam_date||'—')}</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-o" style="width:auto;margin:0;padding:9px 16px" onclick="window.print()">🖨️ 打印 / 存为PDF</button>
+        <button class="btn btn-o" style="width:auto;margin:0;padding:9px 16px" onclick="backToUpload()">重新上传</button>
+      </div>
+    </div></div>`;
+
+  h += `<div class="headline ${ov.level||''}">${esc(ov.label||'')}${ov.level==='warn'&&!r.cycloplegic?'：本次为未散瞳检查，请先补做散瞳验光再下结论':''}</div>`;
+
+  /* 两大结论 */
+  h += `<div class="card"><h3>🎯 一眼看懂</h3><div class="verdict">
+    <div class="vbox"><div class="vt">近视情况</div><div class="vl ${my.level||''}">${esc(my.label||'—')}</div><div class="vx">${esc(my.text||'')}</div></div>
+    <div class="vbox"><div class="vt">散光情况</div><div class="vl ${ast.level||''}">${esc(ast.label||'—')}</div><div class="vx">${esc(ast.text||'')}</div></div>
+  </div></div>`;
+
+  /* 关键指标 */
+  h += `<div class="card"><h3>📊 关键指标 <span class="sub">双眼对照</span></h3><div class="mgrid">`;
+  (r.key_metrics||[]).forEach(m=>{
+    const f=m.flag||'';
+    const cell=(eye,val)=>`<div class="mv ${val!=null?f:''}"><span class="eye">${eye}</span><b>${val!=null?esc(val):'—'}</b>${val!=null&&m.unit?`<span class="sub" style="font-size:11px">${esc(m.unit)}</span>`:''}</div>`;
+    h += `<div class="mcard"><div class="mn"><span>${esc(m.name)}</span>${m.ref&&f?lvTag(f==='high'?'high':f==='warn'?'warn':'ok', f==='high'?'偏长':f==='warn'?'关注':'正常'):''}</div>
+      ${cell('右',m.od)}${cell('左',m.os)}
+      ${m.ref?`<div class="mref">${esc(m.ref)}</div>`:''}</div>`;
+  });
+  h += `</div></div>`;
+
+  /* 配镜处方数据 */
+  const p = r.prescription||{};
+  h += `<div class="card"><h3>👓 配镜处方参考数据</h3>
+    <table class="rxtbl"><thead><tr><th>项目</th><th>右眼 OD</th><th>左眼 OS</th><th>单位</th></tr></thead><tbody>`;
+  (p.rows||[]).forEach(row=>{
+    h += `<tr><td>${esc(row.name)}</td><td>${esc(row.od??'—')}</td><td>${esc(row.os??'—')}</td><td class="sub">${esc(row.unit)}</td></tr>`;
+  });
+  h += `<tr><td>瞳距 PD</td><td colspan="2">${p.pd!=null?esc(p.pd)+' mm':'—'}</td><td class="sub">mm</td></tr>`;
+  h += `</tbody></table>
+    <div class="notice info"><b>瞳高：</b>${esc(p.pupil_height?.note||'需配镜现场测量')}。</div>
+    <div class="notice"><b>散瞳度数：</b>${esc(p.cyclo_rx?.note||'')}</div>
+    <div class="sub" style="margin-top:10px">瞳距：${esc(p.pd_note||'')}</div>
+    <div class="notice" style="margin-top:10px">⚠ ${esc(p.disclaimer||'')}</div>
+  </div>`;
+
+  /* 建议 */
+  h += `<div class="card"><h3>💡 下一步建议</h3><ul class="advice">`;
+  (r.advice||[]).forEach(a=>{ h += `<li>${esc(a)}</li>`; });
+  h += `</ul></div>`;
+
+  /* 来源与警告 */
+  if((r.warnings||[]).length){
+    h += `<div class="card"><h3>⚠️ 识别提示</h3>`;
+    r.warnings.forEach(w=>{ h += `<div class="err">${esc(w)}</div>`; });
+    h += `</div>`;
+  }
+  h += `<div class="card"><h3>📁 来源报告</h3><div class="src-list">`;
+  (r.sources||[]).forEach(s=>{
+    h += `<div>📄 ${esc(s.filename)} <span class="tag">${esc(s.category)}</span> ${s.exam_date?'<span class="sub">'+esc(s.exam_date)+'</span>':''} ${s.cycloplegic?'<span class="tag info">散瞳</span>':''}</div>`;
+  });
+  h += `</div></div>`;
+
+  h += `<div class="disclaimer">${esc(r.disclaimer||'')}<br>生成时间 ${new Date().toLocaleString('zh-CN')}</div>`;
+
+  $('reportView').innerHTML = h;
+  $('uploadView').style.display='none';
+  $('reportView').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function backToUpload(){
+  $('reportView').style.display='none';
+  $('uploadView').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
