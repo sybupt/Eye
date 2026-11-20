@@ -1,0 +1,39 @@
+<view class="page">
+  <view class="card profile-card">
+    <view class="avatar">{{avatarText}}</view>
+    <view class="profile-main">
+      <text class="nickname">{{nickname}}</text>
+      <text class="intro">{{intro}}</text>
+    </view>
+    <view class="login-btn" bindtap="onLoginTap">{{loggedIn ? '退出登录' : '手机号登录'}}</view>
+  </view>
+  <view class="mode-tag {{cloudMode ? 'cloud' : 'demo'}}">{{cloudMode ? '● 云端模式 · 数据按手机号隔离' : '● 演示模式 · 登录后可真实保存'}}</view>
+
+  <view class="card">
+    <view class="card-head">
+      <text class="card-title">我的档案</text>
+      <text class="sub" bindtap="onAddProfile" style="color:#1d4ed8">＋ 新建档案</text>
+    </view>
+    <view class="profile-item" wx:for="{{profiles}}" wx:key="id">
+      <view class="pi-tap" data-id="{{item.id}}" bindtap="onProfileTap">
+        <view class="avatar-sm">{{item.name}}</view>
+        <view class="pi-main">
+          <text class="pi-name">{{item.name}}</text>
+          <text class="sub">{{item.relation}} · {{item.age}}岁 · {{item.visits}}次记录</text>
+        </view>
+      </view>
+      <view class="del-btn" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="onDeleteProfile">删除</view>
+    </view>
+    <view class="rebuild" wx:if="{{!cloudMode}}" bindtap="onRebuildProfiles">档案太乱？清空并重建演示档案</view>
+    <view class="hint">删除档案会连同其检查记录和已上传的原始报告文件一并从云端永久删除；删除后可重新创建同名档案，从头记录。</view>
+  </view>
+
+  <view class="card menu-card" wx:for="{{menuGroups}}" wx:for-item="group" wx:for-index="groupIndex" wx:key="key">
+    <view class="menu-item" wx:for="{{group.items}}" wx:for-item="menuItem" wx:for-index="itemIndex" wx:key="key" data-group="{{groupIndex}}" data-index="{{itemIndex}}" bindtap="handleMenuTap">
+      <text class="menu-text">{{menuItem.text}}</text>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <view class="foot">健康管理记录工具 · 数据仅供随访参考，不构成医疗诊断</view>
+</view>
