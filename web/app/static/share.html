@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>就诊出示 · 眼健康档案</title>
+<script src="/static/echarts.min.js"></script>
+<style>
+:root{--bg:#f4f6fa;--card:#fff;--ink:#1f2937;--sub:#64748b;--line:#e5eaf1;--pri:#1e40af;--danger:#b91c1c;--warn:#b45309;--ok:#047857}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-size:14px;line-height:1.6}
+.head{background:linear-gradient(120deg,#16307a,#0f766e);color:#fff;padding:16px 26px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.head h1{margin:0;font-size:18px}.head .ro{font-size:11px;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:12px}
+.wrap{max-width:1080px;margin:0 auto;padding:20px 22px 60px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:17px 20px;margin-bottom:14px}
+.card h3{margin:0 0 12px;font-size:15px}
+.sub{color:var(--sub);font-size:12px}
+.summary-line{font-size:15px;line-height:1.9}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.kpi{background:#f8fafc;border-radius:9px;padding:11px 13px}.kpi .l{font-size:11px;color:var(--sub)}.kpi .v{font-size:20px;font-weight:750}
+.alert{border-left:4px solid var(--danger);background:#fdeaea;padding:9px 13px;border-radius:0 8px 8px 0;margin:6px 0;font-size:12.5px}
+.alert.ok{border-color:var(--ok);background:#e8f6ef}.alert.warn{border-color:var(--warn);background:#fff5e8}
+.tag{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:10px;background:#eef2f7;color:#475569}
+.tag.red{background:#fdeaea;color:var(--danger)}.tag.orange{background:#fff5e8;color:var(--warn)}.tag.green{background:#e8f6ef;color:var(--ok)}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}.chart{height:220px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}th{background:#f1f5fa;text-align:left;padding:8px;border-bottom:1px solid var(--line)}td{padding:7px 8px;border-bottom:1px solid #f0f3f7}
+.mx-groups{display:flex;flex-direction:column;gap:10px}.mx-card{border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.assess-headline{background:linear-gradient(90deg,#eff4ff,#f8fbff);border:1px solid #dbe6fb;border-radius:8px;padding:11px 13px;font-size:13px;font-weight:600;line-height:1.65;color:#1e3a6d}
+.assess-stage{margin:8px 2px 3px;font-size:12px;color:var(--sub)}.assess-stage b{color:#1e40af;font-size:13px}
+.assess-sec-t{font-size:11.5px;font-weight:700;color:var(--sub);margin:12px 2px 6px;letter-spacing:.5px}
+.assess-findings{display:flex;flex-direction:column;gap:5px}
+.assess-find{display:flex;gap:8px;align-items:flex-start;padding:7px 10px;border-radius:7px;font-size:12px;line-height:1.6;background:#f6f8fb;border:1px solid #e8edf4}
+.assess-find .ai{flex:0 0 17px;height:17px;border-radius:50%;text-align:center;line-height:17px;font-size:10px;font-weight:700;color:#fff;background:#64748b;margin-top:1px}
+.assess-find.ok{background:#f0faf4;border-color:#d6f0e1}.assess-find.ok .ai{background:#16a34a}
+.assess-find.info{background:#f2f6fd;border-color:#dce7fa}.assess-find.info .ai{background:#3b82f6}
+.assess-find.warn{background:#fff8ec;border-color:#fae3bc}.assess-find.warn .ai{background:#f59e0b}
+.assess-find.high{background:#fdf0f0;border-color:#f6d5d5}.assess-find.high .ai{background:#dc2626}
+.assess-actions{margin:2px 0 0;padding-left:20px;font-size:12px;line-height:1.8;color:#334155}.assess-actions li{margin:3px 0}
+.mx-card-title{background:linear-gradient(90deg,#eef2f8,#f9fbfe);padding:7px 12px;font-weight:700;color:#1e40af;font-size:12px;border-bottom:1px solid #dfe6f1}
+.matrix2{width:100%;font-size:11.5px}.matrix2 th{background:#f4f7fb;padding:7px 10px;text-align:center;border-bottom:1px solid var(--line)}
+.matrix2 th:first-child{text-align:left;width:170px}.matrix2 th.mx-od{color:#1e40af}.matrix2 th.mx-os{color:#0f766e}
+.matrix2 td{padding:7px 10px;border-bottom:1px solid #f0f3f7;vertical-align:middle}.matrix2 tr:last-child td{border-bottom:none}
+.mx-metric{font-weight:600;white-space:normal}.mx-unit{color:var(--sub);font-weight:400;font-size:10px;margin-left:3px}
+.mx-ref{display:block;color:#94a3b8;font-size:9px;font-weight:400;margin-top:1px}
+.mx-tl{display:flex;align-items:center;gap:3px;flex-wrap:wrap}
+.mx-pt{display:inline-flex;flex-direction:column;align-items:center;min-width:46px;padding:2px 5px;border-radius:6px;background:#f8fafc;line-height:1.25}
+.mx-pt b{font-size:12.5px}.mx-pt small{font-size:8px;color:#94a3b8}.mx-pt .tag{margin-top:1px;font-size:8px;padding:0 4px}
+.mx-pt.f-CRITICAL{background:#fdeaea}.mx-pt.f-CRITICAL b{color:var(--danger)}
+.mx-pt.f-WARN,.mx-pt.f-LOW,.mx-pt.f-HIGH{background:#fff5e8}.mx-pt.f-WARN b,.mx-pt.f-LOW b,.mx-pt.f-HIGH b{color:var(--warn)}
+.mx-pt.f-NORMAL b{color:var(--ok)}.mx-arrow{color:#cbd5e1;font-weight:700}
+.mx-delta{font-size:9px;color:var(--sub);margin-top:2px}.mx-delta.up{color:var(--danger)}.mx-delta.down{color:var(--ok)}
+@media print{.head{background:#1e40af !important;-webkit-print-color-adjust:exact}body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="head"><div><h1>👁️ 眼健康档案 · 就诊出示</h1>
+  <div style="font-size:12px;opacity:.9">供本次就诊医生参考 · 只读摘要</div></div>
+  <div><span class="ro">🔒 限时只读</span> <button onclick="window.print()" style="background:#fff;color:#1e40af;border:none;border-radius:8px;padding:7px 13px;font-weight:600;cursor:pointer">打印/保存PDF</button></div>
+</div>
+<div class="wrap">
+  <div class="card"><h3>一句话摘要</h3><div id="abstract" class="summary-line">加载中…</div>
+    <div id="kpis" class="kpis"></div><div id="alerts"></div></div>
+  <div class="card" id="assessCard" style="display:none;border-left:4px solid var(--pri)"><h3>🩺 眼睛情况与防控建议</h3>
+    <div id="assessBody"></div>
+    <div class="sub" style="margin-top:8px">自动判读仅供健康管理参考，不构成诊断；请以接诊医生意见为准。</div></div>
+  <div class="card"><h3>核心趋势（右眼实心 / 左眼虚线）</h3><div id="charts" class="charts"></div></div>
+  <div class="card"><h3>指标进展对比（按类 · 左右眼分列）</h3><div id="matrix"></div>
+    <div class="sub" style="margin-top:8px">每个眼别列内按检查时间先后排列；颜色为人群参考判读，仅供健康管理参考。</div></div>
+  <div class="card"><h3>历次检查记录</h3><div style="overflow-x:auto"><table id="tlTable">
+    <thead><tr><th>日期</th><th>年龄</th><th>机构</th><th>类型</th><th>指标数</th><th>备注</th></tr></thead><tbody></tbody></table></div></div>
+  <div class="card sub">本视图由患者/监护人授权生成，数据来自患者自行上传的检查报告，未经医疗机构审核。所有参考值仅用于健康管理记录，不构成诊断或治疗建议，请以执业医师判断为准。</div>
+</div>
+<script>
+/*__SHARE_DATA__*/
+const S = window.SHARE_DATA;
+if(S){
+  const p=S.patient, ped=S.pediatric||{};
+  const sex=p.sex==='M'?'男':p.sex==='F'?'女':'—';
+  const seTxt=(ped.se_latest||[]).map(v=>v.toFixed(2)).join(' / ');
+  const alTxt=(ped.al_latest||[]).map(v=>v.toFixed(2)).join(' / ');
+  document.getElementById('abstract').innerHTML =
+    `<b>${p.display_name}</b>，${sex}，${ped.age!=null?ped.age+'岁':'年龄未知'}。
+     当前评估：<b>${ped.stage||'待评估'}</b>。
+     ${seTxt?`最近等效球镜（右/左）${seTxt} D。`:''}
+     ${alTxt?`眼轴（右/左）${alTxt} mm。`:''}
+     ${ped.cycloplegic?'本次为散瞳验光。':'<span style="color:#b45309">本次未标注散瞳，屈光度判读需谨慎。</span>'}`;
+  document.getElementById('kpis').innerHTML=[
+    ['检查次数',S.counts.encounters],['结构化指标',S.counts.observations],
+    ['衍生分析',S.counts.derived],['风险预警',S.alerts.length]
+  ].map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}</div></div>`).join('');
+  document.getElementById('alerts').innerHTML=S.alerts.length
+    ? S.alerts.map(a=>`<div class="alert ${a.level==='high'?'':'warn'}">⚠ ${a.text}</div>`).join('')
+    : '<div class="alert ok">✓ 暂无超过阈值的预警</div>';
+
+  // 眼睛情况与防控建议
+  if(S.assessment){
+    const a=S.assessment, cls={ok:'ok',info:'info',warn:'warn',danger:'high'}, ic={ok:'✓',info:'i',warn:'!',danger:'!'};
+    document.getElementById('assessCard').style.display='block';
+    document.getElementById('assessBody').innerHTML=
+      `<div class="assess-headline">${a.headline}</div>
+       <div class="assess-stage">当前评估：<b>${a.stage}</b></div>
+       <div class="assess-sec-t">检查发现</div>
+       <div class="assess-findings">${a.findings.map(f=>`<div class="assess-find ${cls[f.level]||'info'}"><span class="ai">${ic[f.level]||'i'}</span><span>${f.text}</span></div>`).join('')}</div>
+       <div class="assess-sec-t">防控建议</div>
+       <ol class="assess-actions">${a.actions.map(x=>`<li>${x}</li>`).join('')}</ol>`;
+  }
+
+  const defs=[['BIO_AL','眼轴长度 (mm)'],['REF_SE','等效球镜 (D)'],['VA_UCVA','裸眼视力'],['PED_HYPEROPIA_RESERVE','远视储备 (D)']];
+  const avail=defs.filter(d=>S.series[d[0]+'_OD']||S.series[d[0]+'_OS']).slice(0,4);
+  document.getElementById('charts').innerHTML=avail.map((d,i)=>`<div><div class="sub" style="text-align:center">${d[1]}</div><div class="chart" id="c${i}"></div></div>`).join('');
+  avail.forEach((d,i)=>{
+    const el=document.getElementById('c'+i); if(!el||!window.echarts)return;
+    const ch=echarts.init(el);const od=S.series[d[0]+'_OD']||[],os=S.series[d[0]+'_OS']||[];
+    const dates=[...new Set([...od,...os].map(x=>x.date))].sort();
+    const mk=a=>dates.map(x=>(a.find(y=>y.date===x)||{}).value??null);
+    ch.setOption({grid:{left:44,right:12,top:16,bottom:28},tooltip:{trigger:'axis'},
+      xAxis:{type:'category',data:dates,axisLabel:{fontSize:9,rotate:dates.length>5?25:0}},
+      yAxis:{type:'value',scale:true,axisLabel:{fontSize:9},splitLine:{lineStyle:{color:'#eef1f5'}}},
+      series:[{name:'右',type:'line',data:mk(od),symbolSize:6,lineStyle:{width:2.5},itemStyle:{color:'#1e40af'}},
+              {name:'左',type:'line',data:mk(os),symbolSize:6,lineStyle:{width:2.5,type:'dashed'},itemStyle:{color:'#0f766e'}}]});
+  });
+  // 指标进展对比矩阵
+  const FLAG={CRITICAL:'red',WARN:'orange',LOW:'orange',HIGH:'orange',NORMAL:'green'};
+  const ftag=f=>f?`<span class="tag ${FLAG[f]||''}">${({CRITICAL:'临界',WARN:'预警',LOW:'偏低',HIGH:'偏高',NORMAL:'正常'})[f]||f}</span>`:'';
+  const fv=v=>v==null?'-':Number(v).toFixed(2).replace(/\.00$/,'');
+  const m=S.matrix;
+  if(m&&m.groups&&m.groups.length){
+    const pt=(c,d)=>c.v==null?'':`<span class="mx-pt ${c.flag?'f-'+c.flag:''}"><b>${fv(c.v)}</b><small>${d||''}</small>${ftag(c.flag)}</span>`;
+    const eye=sd=>{
+      const pts=[];(sd.cells||[]).forEach((c,i)=>{if(c.v!=null)pts.push(pt(c,m.dates[i]));});
+      if(!pts.length)return '<span class="sub">—</span>';
+      let h=`<div class="mx-tl">${pts.join('<span class="mx-arrow">›</span>')}</div>`;
+      if(sd.delta!=null)h+=`<div class="mx-delta ${sd.delta>0?'up':sd.delta<0?'down':''}">首末 ${sd.delta>0?'+':''}${Number(sd.delta).toFixed(2)}</div>`;
+      return h;
+    };
+    let h='<div class="mx-groups">';
+    m.groups.forEach(g=>{
+      h+=`<div class="mx-card"><div class="mx-card-title">${g.name}</div><table class="matrix2"><thead><tr><th>指标</th><th class="mx-od">右眼 OD</th><th class="mx-os">左眼 OS</th></tr></thead><tbody>`;
+      g.rows.forEach(r=>{
+        h+=`<tr><td class="mx-metric">${r.name}<span class="mx-unit">${r.unit}</span>${r.ref?`<span class="mx-ref">${r.ref}</span>`:''}</td>`;
+        h+=`<td>${eye(r.sides.OD||{cells:[]})}</td><td>${eye(r.sides.OS||{cells:[]})}</td></tr>`;
+      });
+      h+='</tbody></table></div>';
+    });
+    h+='</div>';
+    document.getElementById('matrix').innerHTML=h;
+  }else{document.getElementById('matrix').innerHTML='<div class="sub">暂无可对比的指标数据</div>';}
+
+  document.querySelector('#tlTable tbody').innerHTML=[...S.encounters].reverse().map(e=>
+    `<tr><td>${e.date}</td><td>${e.age??'—'}</td><td>${e.institution||'—'}</td><td>${e.visit_type||'—'}</td><td>${e.indicator_count}</td><td>${e.diagnosis||''}</td></tr>`).join('');
+}else{document.getElementById('abstract').textContent='数据不可用';}
+</script>
+</body>
+</html>
