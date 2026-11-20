@@ -1,0 +1,39 @@
+<view class="page">
+  <view class="card">
+    <view class="card-head">
+      <text class="card-title">趋势曲线</text>
+      <text class="sub">{{dateLabel}}</text>
+    </view>
+    <view class="series-tabs">
+      <view class="series-tab {{activeIndex === idx ? 'on' : ''}}" wx:for="{{series}}" wx:key="code" data-index="{{idx}}" bindtap="onSeriesTap">{{item.name}}</view>
+    </view>
+  </view>
+
+  <view class="card" wx:if="{{hasData}}">
+    <view class="chart-head">
+      <view class="legend"><view class="line od"></view><text>右眼 OD</text></view>
+      <view class="legend"><view class="line os"></view><text>左眼 OS</text></view>
+    </view>
+    <view class="chart">
+      <view class="grid-line" wx:for="{{gridLines}}" wx:key="top" style="left:{{item.left}}rpx;top:{{item.top}}rpx;width:{{item.width}}rpx"></view>
+      <text class="axis-y max">{{maxText}}</text>
+      <text class="axis-y min">{{minText}}</text>
+      <view class="seg od" wx:for="{{odSegments}}" wx:key="index" style="left:{{item.left}}rpx;top:{{item.top}}rpx;width:{{item.width}}rpx;transform:rotate({{item.angle}}deg)"></view>
+      <view class="seg os" wx:for="{{osSegments}}" wx:key="index" style="left:{{item.left}}rpx;top:{{item.top}}rpx;width:{{item.width}}rpx;transform:rotate({{item.angle}}deg)"></view>
+      <view class="dot od" wx:for="{{odDots}}" wx:key="index" style="left:{{item.left}}rpx;top:{{item.top}}rpx"></view>
+      <view class="dot os" wx:for="{{osDots}}" wx:key="index" style="left:{{item.left}}rpx;top:{{item.top}}rpx"></view>
+      <text class="axis-x" wx:for="{{xLabels}}" wx:key="text" style="left:{{item.left}}rpx">{{item.text}}</text>
+    </view>
+    <view class="chart-unit">{{meta.name}}（{{meta.unit}}）</view>
+    <view class="hint">右眼蓝色实线、左眼橙色虚线。不同设备存在系统差异，随访建议固定同一台设备。</view>
+  </view>
+
+  <view class="card" wx:else>
+    <view class="empty">暂无足够数据生成曲线</view>
+  </view>
+
+  <view class="card">
+    <view class="card-title">读数说明</view>
+    <view class="hint">曲线把每次检查的双眼数值按时间连起来，便于观察变化趋势。数值为报告记录，仅供随访参考，请以纸质原件为准；本工具不构成医疗诊断。</view>
+  </view>
+</view>
