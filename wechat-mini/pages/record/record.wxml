@@ -1,0 +1,56 @@
+<view class="page" wx:if="{{batch}}">
+  <view class="card">
+    <view class="card-head">
+      <text class="card-title">{{batch.date}}</text>
+      <text class="tag cyc" wx:if="{{batch.cyclo}}">散瞳</text>
+    </view>
+    <view class="sub">{{batch.type}} · {{batch.institution}} · {{batch.indicatorCount}} 项指标</view>
+    <view class="batch-note">按日期合并：{{batch.reportCount}} 份报告 · {{batch.encounterIds.length}} 次上传</view>
+  </view>
+
+  <view class="card">
+    <view class="card-title">指标汇总（当日合并）</view>
+    <view class="metric-head">
+      <text class="mh-name">指标</text>
+      <text class="mh-eye">右 OD</text>
+      <text class="mh-eye">左 OS</text>
+    </view>
+    <view class="metric-row" wx:for="{{metrics}}" wx:key="code">
+      <text class="mr-name">{{item.name}}<text class="sub"> {{item.unit}}</text></text>
+      <text class="mr-val od">{{item.od}}</text>
+      <text class="mr-val os">{{item.os}}</text>
+    </view>
+    <view class="hint">数值为报告记录，仅供随访参考，请以纸质原件为准。</view>
+  </view>
+
+  <view class="card" wx:for="{{sections}}" wx:for-item="sec" wx:key="label">
+    <view class="card-title">{{sec.label}}</view>
+    <view class="raw-row" wx:for="{{sec.rows}}" wx:for-item="line" wx:key="*this">{{line}}</view>
+  </view>
+
+  <!-- 原始报告 -->
+  <view class="card">
+    <view class="card-head">
+      <text class="card-title">原始报告</text>
+      <text class="sub">{{reports.length}} 份</text>
+    </view>
+    <view class="report-row" wx:for="{{reports}}" wx:key="id">
+      <text class="report-name">{{item.name}}</text>
+      <text class="tag">{{item.isPdf ? 'PDF' : '图片'}}</text>
+    </view>
+    <button class="primary-btn report-btn" bindtap="onGetReports" disabled="{{exporting}}">
+      {{exporting ? '正在整理…' : '获取原始报告（合并为图片）'}}
+    </button>
+    <view class="hint">同日多份报告会合并为一张长图，可预览并保存到相册；PDF 原件逐个打开。</view>
+  </view>
+
+  <!-- 隐藏画布：用于长图合成，需有实际宽高 -->
+  <canvas type="2d" id="export-canvas" class="export-canvas"></canvas>
+
+  <view class="action-row">
+    <button class="ghost-btn" bindtap="onShareTap">限时分享</button>
+    <button class="ghost-btn" bindtap="onExportTap">导出汇总图</button>
+  </view>
+
+  <view class="foot">健康管理记录工具 · 不构成医疗诊断</view>
+</view>
