@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Eye检查记录助手 · 产品介绍</title>
+<meta name="description" content="Eye检查记录助手：微信小程序与网页版简洁汇总，拍照上传眼科检查报告，按时间整理眼轴、度数、视力与配镜数据。健康管理记录工具，不构成医疗诊断。">
+<style>
+:root{
+  --bg:#f5f7fb;--surface:#fff;--ink:#1e293b;--muted:#64748b;--line:#e3e9f2;
+  --brand:#1e40af;--brand2:#0f766e;--od:#2563eb;--os:#ea580c;
+  --soft:#eef3ff;--radius:14px;--shadow:0 8px 30px rgba(30,58,138,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-size:15px;line-height:1.75}
+a{color:var(--brand);text-decoration:none}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+/* 顶部 */
+header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;color:var(--ink)}
+.logo .mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:flex;align-items:center;justify-content:center;color:#fff;font-size:19px}
+.nav-links{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.nav-links a{color:var(--muted);font-size:13.5px}
+.nav-links a:hover{color:var(--brand)}
+.btn{display:inline-block;border-radius:9px;padding:9px 18px;font-size:13.5px;font-weight:600;cursor:pointer}
+.btn-p{background:var(--brand);color:#fff}
+.btn-p:hover{background:#17337f}
+.btn-o{background:var(--soft);color:var(--brand);border:1px solid #d7e2fb}
+
+/* Hero */
+.hero{padding:76px 0 56px;background:linear-gradient(180deg,#fff 0%,#f7f9fd 100%);border-bottom:1px solid var(--line)}
+.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+@media(max-width:860px){.hero-grid{grid-template-columns:1fr;gap:32px}.hero{padding:52px 0 40px}}
+.pill{display:inline-block;font-size:12px;color:var(--brand2);background:#e7f6f2;border:1px solid #c7e8df;padding:4px 12px;border-radius:20px;margin-bottom:18px}
+h1{font-size:42px;line-height:1.25;margin:0 0 14px;letter-spacing:-.5px}
+@media(max-width:600px){h1{font-size:32px}}
+h1 .en{color:var(--brand)}
+.lead{font-size:17px;color:var(--muted);max-width:560px;margin:0 0 22px}
+.disclaimer{font-size:12.5px;color:#94a3b8;background:#fff;border:1px dashed #d7e0ec;border-radius:8px;padding:8px 12px;display:inline-block;margin-bottom:26px}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap}
+.hero-cta .btn{padding:12px 22px;font-size:14px}
+/*  phones mock  */
+.phones{display:flex;justify-content:center;gap:14px;perspective:900px}
+.phone{width:168px;background:#fff;border:8px solid #1f2937;border-radius:26px;overflow:hidden;box-shadow:var(--shadow)}
+@media(max-width:400px){.phone{width:140px}}
+.screen{background:#f5f7fb;min-height:330px;padding:12px 10px}
+.screen .top{height:22px;border-radius:6px;background:linear-gradient(135deg,var(--brand),var(--brand2));margin-bottom:12px}
+.screen .card{background:#fff;border:1px solid var(--line);border-radius:9px;padding:9px;margin-bottom:9px}
+.screen .t{font-size:9px;color:#94a3b8;margin-bottom:6px}
+.screen .row{display:flex;justify-content:space-between;font-size:9px;padding:4px 0;border-bottom:1px solid #f0f3f8}
+.screen .row b:nth-child(2){color:var(--od)}
+.screen .row b:nth-child(3){color:var(--os)}
+.screen .mini-btn{background:var(--brand);color:#fff;font-size:9px;border-radius:6px;padding:6px;text-align:center}
+
+/* sections */
+section{padding:64px 0}
+section.alt{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.sec-head{text-align:center;margin-bottom:42px}
+.sec-head .kicker{font-size:12px;color:var(--brand);font-weight:700;letter-spacing:2px;text-transform:uppercase}
+.sec-head h2{font-size:29px;margin:8px 0 8px}
+.sec-head p{color:var(--muted);max-width:640px;margin:0 auto;font-size:14.5px}
+
+/* product cards */
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:800px){.cards{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);transition:transform .18s,border-color .18s}
+.card:hover{transform:translateY(-3px);border-color:#bccdf0}
+.card .ic{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:16px}
+.card .ic.blue{background:var(--soft);color:var(--brand)}
+.card .ic.teal{background:#e7f6f2;color:var(--brand2)}
+.card h3{font-size:20px;margin:0 0 4px}
+.card .sub{font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.card ul{margin:0;padding-left:18px;color:#475569;font-size:13.5px;line-height:2}
+.card .tagline{font-size:13px;color:var(--brand);background:var(--soft);border-radius:8px;padding:8px 12px;margin-top:14px}
+
+/* features */
+.feat{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media(max-width:860px){.feat{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.feat{grid-template-columns:1fr}}
+.f{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px}
+.f .n{font-size:12px;color:#b6c2d4;font-weight:700}
+.f h4{margin:6px 0 6px;font-size:16px}
+.f p{margin:0;font-size:13px;color:var(--muted)}
+
+/* demo table */
+.demo{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);overflow-x:auto}
+.demo h4{margin:0 0 4px;font-size:16px}
+.demo .hint{font-size:12px;color:var(--muted);margin-bottom:16px}
+table.dt{border-collapse:collapse;width:100%;font-size:13px;min-width:520px}
+.dt th,.dt td{border-bottom:1px solid #eef2f7;padding:10px 12px;text-align:left}
+.dt thead th{background:#f4f7fb;color:#475569;font-size:12px}
+.dt .od{color:var(--od);font-weight:700}
+.dt .os{color:var(--os);font-weight:700}
+.dt td.name{font-weight:600}
+.legend{font-size:12px;color:var(--muted);margin-top:14px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}
+
+/* privacy / tech */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:800px){.cols{grid-template-columns:1fr}}
+.box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px}
+.box h3{margin:0 0 14px;font-size:18px}
+.box ul{margin:0;padding-left:18px;color:#475569;font-size:13.5px;line-height:2}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--soft);color:var(--brand);border-radius:18px;padding:6px 12px;font-size:12.5px}
+
+/* code */
+pre{background:#0f172a;color:#e2e8f0;border-radius:12px;padding:18px 20px;overflow-x:auto;font-size:12.5px;line-height:1.7}
+code{font-family:"SFMono-Regular",Consolas,monospace}
+
+footer{background:#0f172a;color:#94a3b8;padding:36px 0;font-size:12.5px}
+footer a{color:#c7d7f5}
+footer .disc{border-top:1px solid #1e293b;margin-top:18px;padding-top:16px;color:#64748b}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap nav">
+    <div class="logo"><span class="mark">◉</span> Eye检查记录助手</div>
+    <nav class="nav-links">
+      <a href="#products">两种形态</a>
+      <a href="#features">核心能力</a>
+      <a href="#summary">简洁汇总</a>
+      <a href="#privacy">隐私安全</a>
+      <a href="#start">快速开始</a>
+      <a class="btn btn-o" href="https://github.com/sybupt/Eye" target="_blank">GitHub 仓库</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="pill">健康管理记录工具 · 开源</span>
+      <h1><span class="en">Eye检查记录助手</span><br>把零散的检查单，变成一条清晰的时间线</h1>
+      <p class="lead">拍照或上传 PDF，自动整理历次眼科检查：眼轴、散瞳度数、裸眼视力、近视与散光，按日期合并成一份简洁汇总。双眼分色、同类同色，一眼看清变化。</p>
+      <div class="disclaimer">本工具为健康管理记录工具，数据仅供随访参考，不构成医疗诊断。</div>
+      <div class="hero-cta">
+        <a class="btn btn-p" href="#products">查看微信小程序</a>
+        <a class="btn btn-o" href="#summary">查看网页版简洁汇总</a>
+      </div>
+    </div>
+    <div class="phones" aria-label="产品界面示意">
+      <div class="phone"><div class="screen">
+        <div class="top"></div>
+        <div class="card"><div class="t">最近一次 · 关键指标</div>
+          <div class="row"><span>眼轴 AL</span><b>23.80</b><b>24.09</b></div>
+          <div class="row"><span>球镜 S</span><b>+2.00</b><b>−1.25</b></div>
+          <div class="row"><span>裸眼视力</span><b>1.0</b><b>0.8</b></div>
+        </div>
+        <div class="card"><div class="t">历次检查</div>
+          <div class="row"><span>11-16</span><span>2 份报告</span></div>
+          <div class="row"><span>10-22</span><span>1 份报告</span></div>
+        </div>
+        <div class="mini-btn">＋ 添加检查记录</div>
+      </div></div>
+      <div class="phone"><div class="screen">
+        <div class="top"></div>
+        <div class="card"><div class="t">简洁汇总 · 时间线</div>
+          <div class="row"><span>指标</span><b>右</b><b>左</b></div>
+          <div class="row"><span>眼轴</span><b>23.8</b><b>24.1</b></div>
+          <div class="row"><span>SE</span><b>+0.26</b><b>−0.33</b></div>
+        </div>
+        <div class="card"><div class="t">原始报告</div>
+          <div class="row"><span>3 份合并</span><span>获取原件</span></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+<section id="products" class="alt">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Two clients</div>
+      <h2>同一名称，两种形态</h2>
+      <p>微信小程序与网页版均命名为「Eye检查记录助手」。网页版首页采用「简洁汇总」视图，两者共用同一套指标口径与展示逻辑。</p>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="ic blue">▣</div>
+        <h3>Eye检查记录助手 · 微信小程序</h3>
+        <div class="sub">随身记录，手机拍照即传</div>
+        <ul>
+          <li>手机号短信验证码登录，多档案云端隔离</li>
+          <li>支持拍照、相册图片、聊天文件与 PDF</li>
+          <li>大模型解析报告，导出为结构化指标</li>
+          <li>按日期合并同日多份报告为一个批次</li>
+          <li>「获取原始报告」：同日图片合成一张长图，PDF 逐个打开</li>
+        </ul>
+        <div class="tagline">适合：家长日常随手记录、多设备查看</div>
+      </div>
+      <div class="card">
+        <div class="ic teal">▤</div>
+        <h3>Eye检查记录助手 · 网页版简洁汇总</h3>
+        <div class="sub">本地或服务器部署，批量整理</div>
+        <ul>
+          <li>拖拽多份报告，OCR + 规则抽取结构化指标</li>
+          <li>时间线矩阵：同一天合并为一列，指标名独立一行</li>
+          <li>散瞳标记、远视储备、眼轴年增长与首末变化</li>
+          <li>趋势曲线、原值明细、就诊出示只读链接</li>
+          <li>原始数据留在本机，不上传第三方</li>
+        </ul>
+        <div class="tagline">适合：批量归档、深度核对、就诊前打印</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Capabilities</div>
+      <h2>从照片到汇总，只需几步</h2>
+      <p>围绕真实报告设计，保留设备原始数值，不臆造、不混淆散瞳与非散瞳数据。</p>
+    </div>
+    <div class="feat">
+      <div class="f"><div class="n">01</div><h4>拍照上传与识别</h4><p>照片、图片、PDF 均可；支持电脑验光单、眼生物测量单、视力检查等多种版式。</p></div>
+      <div class="f"><div class="n">02</div><h4>双眼分色展示</h4><p>右眼固定蓝色、左眼固定橙色；同类指标同色，一眼分辨眼别与类别。</p></div>
+      <div class="f"><div class="n">03</div><h4>按日期合并批次</h4><p>同一天上传的多份报告合并为一条，指标按日期归集，不再重复出现。</p></div>
+      <div class="f"><div class="n">04</div><h4>散瞳状态可标记</h4><p>散瞳检查单独标记，只有散瞳 SE 才作为远视储备参考，避免误读。</p></div>
+      <div class="f"><div class="n">05</div><h4>关键指标追踪</h4><p>眼轴长度、球镜、柱镜、等效球镜、角膜散光、裸眼视力、瞳距逐项记录。</p></div>
+      <div class="f"><div class="n">06</div><h4>原始报告可取回</h4><p>同日图片合并成长图预览下载，PDF 原件逐个打开，随时核对纸质单据。</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="summary" class="alt">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Simple summary</div>
+      <h2>简洁汇总：每项指标一行，双眼一目了然</h2>
+      <p>最近一次关键指标按「检查项目 / 右眼 / 左眼」三列呈现；某项若最近一次未测，则取更早记录并标注日期。</p>
+    </div>
+    <div class="demo">
+      <h4>最近一次 · 关键指标（界面示意）</h4>
+      <div class="hint">截至 2026-11-16 · 每项取最近一次记录</div>
+      <table class="dt">
+        <thead><tr><th>检查项目</th><th>右眼 OD</th><th>左眼 OS</th></tr></thead>
+        <tbody>
+          <tr><td class="name">眼轴长度 AL <small>mm</small></td><td class="od">23.80</td><td class="os">24.09</td></tr>
+          <tr><td class="name">球镜 S <small>D</small></td><td class="od">+2.00</td><td class="os">+2.00</td></tr>
+          <tr><td class="name">等效球镜 SE <small>D</small></td><td class="od">+5.50</td><td class="os">+5.50</td></tr>
+          <tr><td class="name">角膜散光 ΔK <small>D</small></td><td class="od">+1.00</td><td class="os">+0.75</td></tr>
+          <tr><td class="name">瞳距 PD <small>mm</small></td><td class="od">58.00</td><td class="os">同右眼</td></tr>
+        </tbody>
+      </table>
+      <div class="legend"><i style="background:var(--od)"></i>右眼 <span style="margin-left:10px"></span><i style="background:var(--os)"></i>左眼 · 灰色日期标表示该项来自更早检查。数值为报告记录，请以纸质原件为准。</div>
+    </div>
+  </div>
+</section>
+
+<section id="privacy">
+  <div class="wrap cols">
+    <div class="box">
+      <h3>隐私与安全</h3>
+      <ul>
+        <li>网页版原始报告与数据库保存在本地，不上传第三方</li>
+        <li>小程序登录后数据存入云端，按用户身份隔离（RLS）</li>
+        <li>原始文件按用户目录存储，删除档案时级联删除</li>
+        <li>明示同意的隐私政策、删除权与免责说明</li>
+        <li>就诊出示为限时只读链接，可随时撤销</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>技术栈</h3>
+      <div class="chips">
+        <span class="chip">FastAPI</span><span class="chip">SQLite</span><span class="chip">Tesseract OCR</span>
+        <span class="chip">原生 JavaScript</span><span class="chip">ECharts</span>
+        <span class="chip">微信小程序 WXML/WXSS</span><span class="chip">云函数 / 云数据库</span>
+        <span class="chip">大模型解析</span>
+      </div>
+      <h3 style="margin-top:20px">目录结构</h3>
+      <ul>
+        <li><code>wechat-mini/</code> 微信小程序源码</li>
+        <li><code>web/</code> 网页版后端与前端</li>
+        <li><code>web/schema/</code> 指标字典与建表脚本</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="start" class="alt">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Get started</div>
+      <h2>快速开始</h2>
+      <p>仓库内已包含完整源码。网页版本地运行；小程序用微信开发者工具导入即可预览。</p>
+    </div>
+    <div class="cols">
+      <div class="box">
+        <h3>网页版 · 本地运行</h3>
+        <pre><code>cd web
+pip install fastapi uvicorn pillow \
+  pytesseract python-multipart
+python -m uvicorn app.main:app \
+  --host 127.0.0.1 --port 8765</code></pre>
+        <p class="hint">浏览器打开 http://127.0.0.1:8765/ 。需本机安装 Tesseract（含 chi_sim 中文包）。首次启动自动建库。</p>
+      </div>
+      <div class="box">
+        <h3>微信小程序 · 导入预览</h3>
+        <pre><code>用微信开发者工具
+导入目录：wechat-mini/
+AppID：wx579e302b755a02c3
+菜单 → 工具 → 构建 npm
+编译预览 / 真机调试</code></pre>
+        <p class="hint">正式对外使用前，需在微信公众平台配置 request 合法域名，并在后台填写用户隐私保护指引。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>Eye检查记录助手 · <a href="https://github.com/sybupt/Eye" target="_blank">github.com/sybupt/Eye</a></div>
+    <div class="disc">本工具为健康管理记录工具，仅整理与展示检查报告中的数值记录，不构成医疗诊断、治疗建议或用药指导。如有眼部不适或疑问，请及时就医并遵从专业医师意见。数值请以纸质原件为准。</div>
+  </div>
+</footer>
+</body>
+</html>
