@@ -1,0 +1,126 @@
+<view class="page">
+
+  <!-- 档案切换 -->
+  <view class="card profile-bar">
+    <view class="profile-info">
+      <text class="profile-name">{{profile.name}}</text>
+      <text class="sub">{{profile.relation}} · {{profile.age}}岁 · 共 {{visitCount}} 次记录</text>
+    </view>
+    <picker mode="selector" range="{{profiles}}" range-key="name" value="{{profileIndex}}" bindchange="onProfileChange">
+      <view class="switch-btn">切换 ▾</view>
+    </picker>
+  </view>
+
+  <!-- 空档案提示 -->
+  <view class="card empty-card" wx:if="{{!visitCount}}">
+    <text class="empty-icon">◌</text>
+    <text class="card-title">还没有检查记录</text>
+    <text class="sub">点击下方「添加检查记录」，上传报告即可自动整理成时间线</text>
+  </view>
+
+  <!-- 最近一次关键指标：每项单独一行，右眼蓝 / 左眼橙 -->
+  <view class="card" wx:if="{{kpis.length}}">
+    <view class="card-head">
+      <text class="card-title">最近一次 · 关键指标</text>
+      <text class="sub">{{latestDate}}</text>
+    </view>
+    <view class="kpi-table">
+      <view class="kt-row kt-head">
+        <text class="kt-name">检查项目</text>
+        <text class="kt-eye od">右眼</text>
+        <text class="kt-eye os">左眼</text>
+      </view>
+      <view class="kt-row" wx:for="{{kpis}}" wx:key="code">
+        <view class="kt-name">
+          <text>{{item.name}}</text>
+          <text class="kt-unit" wx:if="{{item.unit}}">{{item.unit}}</text>
+        </view>
+        <view class="kt-cell">
+          <text class="kt-val" style="color:{{item.odColor}}">{{item.od}}</text>
+          <text class="warn-dot" wx:if="{{item.odFlag === 'warn'}}">!</text>
+        </view>
+        <view class="kt-cell">
+          <text class="kt-val" style="color:{{item.osColor}}">{{item.os}}</text>
+          <text class="warn-dot" wx:if="{{item.osFlag === 'warn'}}">!</text>
+        </view>
+      </view>
+    </view>
+    <view class="hint">右眼蓝色 · 左眼橙色；“!”为超出参考区间的提示，仅供随访参考。</view>
+  </view>
+
+  <!-- 时间线矩阵：左右眼用固定主题色 -->
+  <view class="card" wx:if="{{groups.length}}">
+    <view class="card-head">
+      <text class="card-title">关键指标时间线</text>
+      <text class="sub">← 左右滑动查看 →</text>
+    </view>
+    <scroll-view scroll-x class="matrix-scroll">
+      <view class="matrix">
+        <!-- 表头 -->
+        <view class="mrow mhead">
+          <view class="mlabel">指标</view>
+          <view class="mcell" wx:for="{{visits}}" wx:key="id">
+            <text class="mdate">{{item.short}}</text>
+            <text class="mtype">{{item.type}}</text>
+            <text class="mcyc" wx:if="{{item.cyclo}}">散瞳</text>
+          </view>
+        </view>
+        <!-- 分组 -->
+        <block wx:for="{{groups}}" wx:for-item="g" wx:key="key">
+          <view class="mgroup" style="background:{{g.color}}1a;border-left-color:{{g.color}};color:{{g.color}}">{{g.name}}</view>
+          <block wx:for="{{g.rows}}" wx:for-item="r" wx:key="code">
+            <!-- 指标名独立一行，作为该指标的小标题 -->
+            <view class="mrow metric-title">
+              <view class="mlabel">
+                <text class="mname">{{r.name}}</text>
+                <text class="munit" wx:if="{{r.unit}}">{{r.unit}}</text>
+              </view>
+              <view class="mcell" wx:for="{{visits}}" wx:key="id"></view>
+            </view>
+            <!-- 右眼一行、左眼一行，分别只显示眼别徽章 + 数值 -->
+            <view class="mrow" wx:for="{{r.sides}}" wx:for-item="s" wx:key="side">
+              <view class="mlabel eye-label">
+                <text class="ebadge" style="{{s.badgeStyle}}">{{s.eye}}</text>
+              </view>
+              <view class="mcell" wx:for="{{s.cells}}" wx:for-item="c" wx:key="date">
+                <text class="mval" style="{{c.valStyle}}">{{c.text}}</text>
+                <text class="warn-dot" wx:if="{{c.flag === 'warn'}}">!</text>
+              </view>
+            </view>
+          </block>
+        </block>
+      </view>
+    </scroll-view>
+    <view class="hint">右眼蓝色 · 左眼橙色；“!”为参考区间提示。数值为报告记录，请以纸质原件为准。</view>
+  </view>
+
+  <!-- 上传入口 -->
+  <view class="card upload-entry" bindtap="goUpload">
+    <view>
+      <text class="card-title">＋ 添加检查记录</text>
+      <text class="sub">支持照片 / 图片 / PDF，自动整理成时间线</text>
+    </view>
+    <text class="arrow">›</text>
+  </view>
+
+  <!-- 历次检查：以日期为准，同一天的多次上传合并为一个批次 -->
+  <view class="card" wx:if="{{encounters.length}}">
+    <view class="card-head">
+      <text class="card-title">历次检查</text>
+      <text class="sub">共 {{visitCount}} 天</text>
+    </view>
+    <view class="visit-item" wx:for="{{encounters}}" wx:key="id" data-date="{{item.date}}" bindtap="goRecord">
+      <view class="visit-left">
+        <text class="visit-date">{{item.date}}</text>
+        <text class="sub">{{item.type}} · {{item.institution}}</text>
+      </view>
+      <view class="visit-right">
+        <text class="tag cyc" wx:if="{{item.cyclo}}">散瞳</text>
+        <text class="tag">{{item.reportCount}} 份报告</text>
+        <text class="arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="foot">健康管理记录工具 · 数据仅供随访参考，不构成医疗诊断</view>
+</view>
