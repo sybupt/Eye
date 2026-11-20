@@ -1,0 +1,85 @@
+<view class="page">
+  <view class="card">
+    <view class="card-head">
+      <text class="card-title">添加检查记录</text>
+      <text class="sub {{cloudMode ? 'ok' : ''}}">{{cloudMode ? '云端保存' : '演示模式'}}</text>
+    </view>
+    <view class="hint" wx:if="{{cloudMode}}">报告原件上传云端、AI 识别数值后写入你的时间线，数据仅你可见；PDF 原件可归档，识别请用报告图片。</view>
+    <view class="hint" wx:else>当前未登录，以下为演示结果（不保存）。手机号登录后即可真实上传并云端保存。</view>
+  </view>
+
+  <view class="card" wx:if="{{cloudMode}}">
+    <view class="field">
+      <text class="field-label">保存到档案</text>
+      <picker mode="selector" range="{{profiles}}" range-key="name" value="{{profileIndex}}" bindchange="onProfileChange">
+        <view class="field-value">{{profiles[profileIndex].name || '请先创建档案'}} ▾</view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="field">
+      <text class="field-label">检查日期</text>
+      <picker mode="date" value="{{date}}" bindchange="onDateChange">
+        <view class="field-value">{{date}}</view>
+      </picker>
+    </view>
+    <view class="field">
+      <text class="field-label">检查类型</text>
+      <picker mode="selector" range="{{visitTypes}}" value="{{typeIndex}}" bindchange="onTypeChange">
+        <view class="field-value">{{visitType}} ▾</view>
+      </picker>
+    </view>
+    <view class="field switch-field">
+      <text class="field-label">本次为散瞳后检查</text>
+      <switch checked="{{cyclo}}" bindchange="onCycloChange" color="#1d4ed8" />
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-title">报告来源</view>
+    <picker mode="selector" range="{{sources}}" range-key="label" value="{{sourceIndex}}" bindchange="onSourceChange">
+      <view class="source-picker">{{sources[sourceIndex].label}} ▾</view>
+    </picker>
+    <view class="photo-grid">
+      <view class="photo" wx:for="{{files}}" wx:key="path">
+        <image wx:if="{{item.kind === 'image'}}" src="{{item.path}}" mode="aspectFill"></image>
+        <view wx:if="{{item.kind === 'pdf'}}" class="pdf-thumb">
+          <text class="pdf-tag">PDF</text>
+          <text class="pdf-name">{{item.name}}</text>
+        </view>
+        <view class="photo-del" data-index="{{index}}" bindtap="removeFile">×</view>
+      </view>
+      <view class="photo-add" bindtap="chooseFiles" wx:if="{{step === 'idle'}}">
+        <text class="plus">＋</text>
+        <text class="sub">{{sources[sourceIndex].label}}</text>
+      </view>
+    </view>
+    <view class="hint" wx:if="{{sources[sourceIndex].key === 'pdf'}}">PDF 请从微信聊天会话中选择；正式版可支持本地文件直接导入。</view>
+    <view class="hint" wx:else>支持验光单、眼生物测量单、电脑验光小票等，可一次选多张。</view>
+  </view>
+
+  <view class="card" wx:if="{{step === 'running'}}">
+    <view class="card-title">正在整理报告…</view>
+    <view class="progress"><view class="progress-bar" style="width:{{progress}}%"></view></view>
+    <view class="hint">{{progressText || '正在识别报告内容，请稍候。'}}</view>
+  </view>
+
+  <view class="card done-card" wx:if="{{step === 'done'}}">
+    <view class="done-icon">✓</view>
+    <view class="card-title">{{result.demo ? '演示完成' : '已整理完成'}}</view>
+    <view class="sub">已处理 {{result.sourceText}} · {{result.indicators}} 项指标</view>
+    <view class="sub">检查日期 {{result.date}}{{result.cyclo ? ' · 散瞳检查' : ''}} · 档案 {{result.name}}</view>
+    <view class="demo-banner" wx:if="{{result.demo}}">演示数据未保存 · 登录后上传报告即可真实记录</view>
+    <view class="preview-title">{{result.demo ? '示例内容' : '识别出的关键内容'}}</view>
+    <view class="preview-row" wx:for="{{result.preview}}" wx:key="code">
+      <text class="pv-name">{{item.name}}</text>
+      <text class="pv-text">{{item.text}}</text>
+    </view>
+    <view class="hint" wx:if="{{result.note}}">备注：{{result.note}}</view>
+    <button class="primary-btn" bindtap="goHome">返回查看时间线</button>
+    <button class="ghost-btn" bindtap="reset">继续添加</button>
+  </view>
+
+  <button class="primary-btn submit-btn" wx:if="{{step === 'idle'}}" bindtap="submit">上传并整理</button>
+</view>
