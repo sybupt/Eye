@@ -5,26 +5,65 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const api = async (url, opt) => { const r = await fetch(url, opt); if(!r.ok) throw new Error(await r.text()); return r.json(); };
 
-/* ---------- 初始化 ---------- */
+/* ---------- 初始化：恢复云会话；未登录用演示模式 ---------- */
 async function init(){
   try{
-    patients = await api('/api/patients');
+    const sess = await EyeCloud.getSession();
+    renderAuthState(sess);
+    patients = await EyeCloud.listProfiles();
     renderPatientSelect();
     if(patients.length){
       const latest = patients.reduce((a,b)=>(b.id>a.id?b:a), patients[0]);
-      currentPid = latest.id; $('patientSel').value = currentPid;
+      currentPid = latest.id; $('patientSel').value = String(currentPid);
       await loadPatient();
     }else{
       showEmptyAll();
     }
-  }catch(e){ console.error(e); }
+  }catch(e){ console.error(e); showEmptyAll(); }
+}
+function renderAuthState(sess){
+  if(sess && !sess.demo){
+    $('modeBadge').textContent='云端模式'; $('modeBadge').classList.add('cloud');
+    const phone=sess.user&&sess.user.phone||'';
+    $('userLabel').textContent=phone?phone.slice(0,3)+'****'+phone.slice(-4):'已登录';
+    $('authBtn').textContent='退出登录'; $('authBtn').onclick=doLogout;
+  }else{
+    $('modeBadge').textContent='演示模式'; $('modeBadge').classList.remove('cloud');
+    $('userLabel').textContent='未登录'; $('authBtn').textContent='手机号登录'; $('authBtn').onclick=openAuthModal;
+  }
+}
+function openAuthModal(){ $('authMsg').textContent=''; $('authModal').classList.add('on'); }
+async function sendAuthCode(){
+  const phone=$('authPhone').value.trim();
+  $('authMsg').textContent='正在发送…';
+  const r=await EyeCloud.sendPhoneCode(phone);
+  $('authMsg').textContent = r.error ? (r.error.message||'发送失败') : '验证码已发送，请查收短信';
+}
+let _authPending=false;
+async function submitAuth(){
+  if(_authPending) return;
+  _authPending=true;
+  $('authMsg').textContent='正在登录…';
+  const r=await EyeCloud.verifyPhoneCode($('authCode').value.trim());
+  _authPending=false;
+  if(r.error){ $('authMsg').textContent=r.error.message||'登录失败'; return; }
+  closeModal('authModal');
+  await init();
+}
+async function doLogout(){
+  await EyeCloud.signOut();
+  await init();
 }
 function renderPatientSelect(){
   $('patientSel').innerHTML = patients.length
-    ? patients.map(p=>`<option value="${p.id}">${esc(p.display_name)}${p.relation==='CHILD'?'（儿童）':''}</option>`).join('')
+    ? patients.map(p=>`<option value="${esc(String(p.id))}">${esc(p.display_name)}${p.relation==='CHILD'?'（儿童）':''}</option>`).join('')
     : '<option value="">暂无档案</option>';
 }
-async function onPatientChange(){ currentPid = +$('patientSel').value || null; await loadPatient(); }
+async function onPatientChange(){
+  const v=$('patientSel').value;
+  currentPid = (v==='demo') ? 'demo' : (Number(v)||null);
+  await loadPatient();
+}
 
 function showEmptyAll(){
   $('verdictCard').innerHTML='<div class="empty">请先新建档案并上传报告</div>';
@@ -35,13 +74,20 @@ function showEmptyAll(){
 async function loadPatient(){
   if(!currentPid){ showEmptyAll(); return; }
   try{
-    const [s, docs] = await Promise.all([
-      api('/api/summary/'+currentPid),
-      api('/api/documents/'+currentPid).catch(()=>[])
-    ]);
-    summary = s; allDocs = docs || [];
+    summary = await EyeCloud.getSummary(currentPid);
+    allDocs = (summary._meta && summary._meta.documents) || [];
+    await attachFileUrls(allDocs);
     renderAll();
   }catch(e){ console.error(e); }
+}
+
+// 云存储的原始报告需要签名 URL 才能查看/合成；演示模式无原件。
+async function attachFileUrls(docs){
+  for(const d of docs){
+    if(d.storage_path){
+      try{ d.url = await EyeCloud.fileUrl(d.storage_path); }catch(e){ d.url=''; }
+    }
+  }
 }
 
 function renderAll(){
@@ -61,14 +107,27 @@ function closeModal(id){ $(id).classList.remove('on'); if(id==='docModal') $('do
 async function createPatient(){
   const name = $('npName').value.trim();
   if(!name){ alert('请填写姓名'); return; }
-  const fd = new FormData();
-  fd.append('display_name',name); fd.append('birth_date',$('npBirth').value);
-  fd.append('sex',$('npSex').value); fd.append('relation',$('npRel').value);
-  const r = await api('/api/patients',{method:'POST',body:fd});
-  closeModal('patientModal'); patients = await api('/api/patients');
-  currentPid = r.id; renderPatientSelect(); $('patientSel').value=r.id;
+  const r = await EyeCloud.createProfile({
+    display_name:name, birth_date:$('npBirth').value, sex:$('npSex').value, relation:$('npRel').value,
+  });
+  if(r.error){ alert(r.error.message||'创建失败'); return; }
+  closeModal('patientModal'); patients = await EyeCloud.listProfiles();
+  currentPid = r.id; renderPatientSelect(); $('patientSel').value=String(r.id);
   $('npName').value=''; $('npBirth').value='';
   await loadPatient();
+}
+
+async function deleteCurrentProfile(){
+  if(EyeCloud.isDemo()){ alert('演示模式下不能删除档案，请先登录'); return; }
+  const p=patients.find(x=>String(x.id)===String(currentPid));
+  if(!p) return;
+  if(!confirm('确认删除档案「'+p.display_name+'」？该档案下的所有检查记录与原始文件将一并删除，且不可恢复。')) return;
+  const r=await EyeCloud.deleteProfile(currentPid);
+  if(r.error){ alert(r.error.message||'删除失败'); return; }
+  patients=await EyeCloud.listProfiles();
+  currentPid=patients.length?patients[patients.length-1].id:null;
+  renderPatientSelect();
+  if(currentPid){ $('patientSel').value=String(currentPid); await loadPatient(); } else showEmptyAll();
 }
 
 /* ---------- 上传：上传即入库即汇总 ---------- */
@@ -81,35 +140,32 @@ function addUpFiles(list){ upFiles.push(...list); $('upBtn').disabled = upFiles.
   $('recvMsg').innerHTML=`<span class="sub">已选择 ${upFiles.length} 个文件：${esc(upFiles.map(f=>f.name).join('、'))}</span>`; }
 
 async function doUpload(){
+  if(EyeCloud.isDemo()){ openAuthModal(); $('authMsg').textContent='上传报告需要先登录（演示模式仅供浏览）'; return; }
   if(!upFiles.length){ alert('请先选择报告照片'); return; }
   if(!currentPid){ alert('请先新建或选择一个档案'); return; }
   $('upBtn').disabled=true; $('prog').style.display='block'; $('progBar').style.width='25%';
   $('recvMsg').innerHTML='<span class="sub"><span class="spin"></span> 正在识别并并入时间线，请稍候…</span>';
-  const fd = new FormData();
-  upFiles.forEach(f=>fd.append('files',f));
-  fd.append('patient_id', currentPid);
-  fd.append('exam_date', $('upDate').value);
-  fd.append('visit_type', $('upVisit').value);
-  fd.append('institution', $('upInst').value.trim());
-  fd.append('cycloplegic', $('upCyclo').checked ? 'true' : 'auto');
   try{
     $('progBar').style.width='60%';
-    const r = await api('/api/quick-add',{method:'POST',body:fd});
+    const r = await EyeCloud.uploadFiles(currentPid, upFiles.slice(), {
+      date: $('upDate').value, visitType: $('upVisit').value,
+      institution: $('upInst').value.trim(), cyclo: $('upCyclo').checked,
+    });
+    if(r.error) throw new Error(r.error.message||'上传失败');
     $('progBar').style.width='100%';
     summary = r.summary;
-    allDocs = await api('/api/documents/'+currentPid).catch(()=>[]);
+    allDocs = (summary._meta && summary._meta.documents) || [];
+    await attachFileUrls(allDocs);
     renderAll();
-    const ok = r.recognitions.filter(x=>!x.error);
-    const warns = r.recognitions.flatMap(x=>x.warnings||[]);
-    let msg = `<div class="alert ok">✓ 已并入档案：识别 ${ok.length} 份报告，入库 ${r.stats.observations} 项指标（检查日期 ${esc(r.chosen_date)}）。`+
-      (r.stats.skipped?` 跳过 ${r.stats.skipped} 项低质量数值。`:'')+`</div>`;
-    ok.forEach(x=>msg+=`<div class="sub">📄 ${esc(x.filename)} · ${esc(x.category||'未分类')} · ${x.n_fields} 项 ${x.date?'· '+esc(x.date):''}</div>`);
-    warns.forEach(w=>msg+=`<div class="alert warn" style="margin:4px 0">⚠ ${esc(w)}</div>`);
+    const d = r.data;
+    let msg = `<div class="alert ok">✓ 已并入档案：识别 ${d.recognized.length} 份报告，入库 ${d.stats.observations} 项指标（检查日期 ${esc(d.exam_date)}）。</div>`;
+    d.recognized.forEach(x=>msg+=`<div class="sub">📄 ${esc(x.filename)} · ${x.n_fields} 项 ${x.date?'· '+esc(x.date):''}</div>`);
+    (d.warnings||[]).forEach(w=>msg+=`<div class="alert warn" style="margin:4px 0">⚠ ${esc(w)}</div>`);
     upFiles=[]; $('fileInput').value=''; $('upDate').value=''; $('upInst').value=''; $('upCyclo').checked=false;
     $('recvMsg').innerHTML=msg;
     setTimeout(()=>$('prog').style.display='none',400);
   }catch(e){
-    $('recvMsg').innerHTML=`<div class="alert">上传失败：${esc(e.message.slice(0,200))}</div>`;
+    $('recvMsg').innerHTML=`<div class="alert">上传失败：${esc(String(e.message||e).slice(0,300))}</div>`;
     $('prog').style.display='none';
   }finally{ $('upBtn').disabled = upFiles.length===0 || !currentPid; }
 }
@@ -444,7 +500,7 @@ function openBatch(date){
 
   h += `<div class="batch-sec"><h4>原始报告 · ${b.docs.length} 份</h4>`;
   if(b.docs.length){
-    h += b.docs.map(d=>`<div class="rep-row"><span>${d.file_type==='pdf'?'📕':'🖼️'} ${esc(d.filename)} <span class="sub">${esc(d.doc_category||'')}</span></span><a href="/api/file/${d.id}" target="_blank" class="tag blue">查看原件</a></div>`).join('');
+    h += b.docs.map(d=>`<div class="rep-row"><span>${d.file_type==='pdf'?'📕':'🖼️'} ${esc(d.filename)} <span class="sub">${esc(d.doc_category||'')}</span></span>${d.url?`<a href="${esc(d.url)}" target="_blank" class="tag blue">查看原件</a>`:'<span class="sub">原件不可用</span>'}</div>`).join('');
     h += `<button class="btn-p" style="margin-top:10px" onclick="getReportsForDate('${esc(b.date)}')">获取原始报告（合并为图片 / PDF）</button>`;
     h += '<div class="hint">同日多份图片会合并为一张长图供预览下载；PDF 原件逐个打开。</div>';
   }else{
@@ -463,10 +519,10 @@ async function getReportsForDate(date){
   if(!docs.length){ alert('该日期暂无原始报告'); return; }
   const imgs = docs.filter(d=>d.file_type!=='pdf');
   const pdfs = docs.filter(d=>d.file_type==='pdf');
-  pdfs.forEach(d=>window.open('/api/file/'+d.id,'_blank')); // 用户点击链路内先打开，避免被拦截
+  pdfs.forEach(d=>{ if(d.url) window.open(d.url,'_blank'); }); // 用户点击链路内先打开，避免被拦截
   try{
-    if(imgs.length){
-      const url = await mergeImagesToDataURL(imgs);
+    if(imgs.filter(d=>d.url).length){
+      const url = await mergeImagesToDataURL(imgs.filter(d=>d.url));
       $('imgTitle').textContent = date+' · 原始报告合并图（'+imgs.length+' 张）';
       $('imgPreview').src = url;
       $('imgDownload').href = url;
@@ -485,7 +541,8 @@ async function mergeImagesToDataURL(imgs){
   let maxW = 760;
   for(const d of imgs){
     const img = new Image();
-    img.src = '/api/file/'+d.id;
+    img.crossOrigin = 'anonymous';
+    img.src = d.url;
     await new Promise((res,rej)=>{
       img.onload = res;
       img.onerror = ()=>rej(new Error('图片加载失败：'+(d.filename||d.id)));
@@ -526,37 +583,25 @@ function renderSource(){
     return `<div class="src-day"><div class="rep-row"><b>${esc(k)} · ${list.length} 份${pdfs?'（含 '+pdfs+' 份 PDF）':''}</b>`+
       `<button class="rv-toggle" onclick="getReportsForDate('${esc(k)}')">获取原始报告</button></div>`+
       list.map(d=>`<div class="doc-item"><span>${d.file_type==='pdf'?'📕':'🖼️'} ${esc(d.filename)} <span class="sub">${esc(d.doc_category||'')}</span></span>
-        <a href="javascript:void(0)" onclick="openDocPreview(${d.id},'${esc(d.filename)}','${esc(d.file_type)}')" class="tag blue">查看原件</a></div>`).join('')+
+        ${d.url?`<a href="javascript:void(0)" onclick="openDocPreview('${esc(d.url)}','${esc(d.filename)}','${esc(d.file_type)}')" class="tag blue">查看原件</a>`:'<span class="sub">原件不可用</span>'}</div>`).join('')+
       `</div>`;
   }).join('');
 }
 
-function openDocPreview(id, filename, fileType){
-  const url='/api/file/'+id;
+function openDocPreview(url, filename, fileType){
+  if(!url){ alert('原件签名地址不可用，请重新打开档案'); return; }
   $('docPrevTitle').textContent=filename||'原始报告'; $('docPrevOpen').href=url;
   const body=$('docPrevBody');
-  if(fileType==='pdf') body.innerHTML=`<iframe src="${url}" title="${esc(filename||'报告')}"></iframe>`;
-  else body.innerHTML=`<img src="${url}" alt="${esc(filename||'报告')}" onerror="this.parentElement.innerHTML='<div class=\\'empty\\'>图片加载失败，请点右上角「新标签打开」</div>'">`;
+  if(fileType==='pdf') body.innerHTML=`<iframe src="${esc(url)}" title="${esc(filename||'报告')}"></iframe>`;
+  else body.innerHTML=`<img src="${esc(url)}" alt="${esc(filename||'报告')}" onerror="this.parentElement.innerHTML='<div class=\\'empty\\'>图片加载失败，请点右上角「新标签打开」</div>'">`;
   $('docModal').classList.add('on');
 }
 
 /* ---------- 就诊出示 ---------- */
 function openShareModal(){
   if(!currentPid){ alert('请先选择档案'); return; }
-  $('shareResult').innerHTML=''; $('shareModal').classList.add('on');
+  $('shareResult').innerHTML='<div class="hint">云端版本请通过「Eye检查记录助手」小程序的就诊出示功能生成只读链接；网页版用于本人随时查阅与整理。数值请以纸质原件为准。</div>';
+  $('shareModal').classList.add('on');
 }
-async function createShare(){
-  const r=await api('/api/share',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({patient_id:currentPid,hours:+$('shareHours').value})});
-  const url=location.origin+'/share/'+r.token;
-  $('shareResult').innerHTML=`<div class="alert ok">✓ 链接已生成（有效期至 ${esc(r.expires_at)}）</div>
-    <input type="text" readonly value="${url}" id="shareUrl" style="width:100%;margin:6px 0">
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn-g" onclick="copyShare()">复制链接</button>
-      <a class="btn-p" href="${url}" target="_blank" style="text-decoration:none;display:inline-block;padding:8px 15px">打开医生视图</a>
-      <button class="btn-d" onclick="revokeShare('${r.token}')">撤销</button></div>`;
-}
-function copyShare(){const el=$('shareUrl');el.select();document.execCommand('copy');alert('已复制')}
-async function revokeShare(t){await api('/api/share/'+t,{method:'DELETE'});$('shareResult').innerHTML='<div class="alert warn">链接已撤销</div>';}
 
 init();
