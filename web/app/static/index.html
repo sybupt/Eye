@@ -6,8 +6,11 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>简洁汇总 · 眼检查报告助手</title>
+<title>Eye检查记录助手 · 简洁汇总</title>
 <script src="/static/echarts.min.js"></script>
+<!-- 云服务 SDK（Web CDN 版）：与微信小程序共用同一应用/云数据库/登录/存储/AI -->
+<script src="https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-cloud-sdk@dev/lib/index.global.js"></script>
+<script src="/static/cloud-store.js?v=20261120c"></script>
 <style>
 :root{--bg:#f4f6fa;--card:#fff;--ink:#1f2937;--sub:#64748b;--line:#e5eaf1;--pri:#1e40af;--priL:#eaf0ff;--teal:#0f766e;--warn:#b45309;--danger:#b91c1c;--ok:#047857;--od:#2563eb;--os:#ea580c}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-size:14px;line-height:1.6}
@@ -16,6 +19,10 @@
 .top .slogan{font-size:11.5px;opacity:.85;margin-top:2px}
 .top-right{display:flex;align-items:center;gap:9px;font-size:13px;flex-wrap:wrap}
 .top-right a,.top-right button{white-space:nowrap}
+.pill-top{font-size:10.5px;padding:2px 9px;border-radius:10px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35)}
+.pill-top.cloud{background:#e6f5f1;color:#0f766e;border-color:#b7e4dc}
+.user-label{font-size:12px;opacity:.92}
+.top-right .sep{opacity:.4}
 select,input,button,textarea{font-family:inherit;font-size:13px}
 select,input[type=text],input[type=date],textarea{border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:#fff;color:var(--ink)}
 button{border:none;border-radius:8px;padding:8px 15px;cursor:pointer;font-weight:600}
@@ -184,6 +191,10 @@ a{color:var(--pri)}
   <div><h1>👁️ 简洁汇总 <span class="badge">眼检查报告助手 · 按日期合并版</span></h1>
     <div class="slogan">以时间为线，一眼看清历次检查的关键指标 · 健康管理记录，不构成医疗诊断</div></div>
   <div class="top-right">
+    <span id="modeBadge" class="pill-top">演示模式</span>
+    <span id="userLabel" class="user-label">未登录</span>
+    <button id="authBtn" class="btn-o" onclick="openAuthModal()">手机号登录</button>
+    <span class="sep">|</span>
     <span>当前档案</span>
     <select id="patientSel" onchange="onPatientChange()"></select>
     <button class="btn-o" onclick="openPatientModal()">+ 新建档案</button>
@@ -256,6 +267,17 @@ a{color:var(--pri)}
   <div class="foot-note" id="footNote">本工具为健康管理记录与人群参考判读，不构成医疗诊断；具体请遵医嘱并携带原件就诊。</div>
 </div>
 
+<!-- 手机号登录弹窗 -->
+<div class="modal" id="authModal"><div class="modal-box" style="max-width:420px">
+  <h3>手机号登录</h3>
+  <p class="sub">登录后可上传到云端，并与微信小程序共用同一份档案数据；未登录时可浏览演示数据。</p>
+  <div class="form-row"><span>手机号</span><input type="text" id="authPhone" placeholder="11 位手机号" maxlength="11"></div>
+  <div class="form-row"><span>验证码</span><div style="display:flex;gap:8px"><input type="text" id="authCode" placeholder="短信验证码" maxlength="6"><button class="btn-g" id="sendCodeBtn" onclick="sendAuthCode()" style="white-space:nowrap">获取验证码</button></div></div>
+  <div id="authMsg" class="hint" style="min-height:18px"></div>
+  <div style="margin-top:12px;display:flex;gap:8px"><button class="btn-p" onclick="submitAuth()">登录 / 注册</button><button class="btn-g" onclick="closeModal('authModal')">取消</button></div>
+  <div class="hint" style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px">登录即表示同意《隐私说明》：数据按手机号隔离存储，仅你本人可见，可删除档案；本工具为健康管理记录，不构成医疗诊断。</div>
+</div></div>
+
 <!-- 新建档案弹窗 -->
 <div class="modal" id="patientModal"><div class="modal-box">
   <h3>新建检查档案</h3>
@@ -270,9 +292,7 @@ a{color:var(--pri)}
 <!-- 就诊出示弹窗 -->
 <div class="modal" id="shareModal"><div class="modal-box">
   <h3>就诊现场出示</h3>
-  <p class="sub">生成限时只读链接，医生扫码即可看到该档案的全部检查指标、时间线与趋势，无需安装 App，可随时撤销。</p>
-  <div class="form-row" style="max-width:360px"><span>有效时长</span><select id="shareHours"><option value="2">2 小时</option><option value="24" selected>24 小时</option><option value="72">3 天</option><option value="168">7 天</option></select></div>
-  <button class="btn-p" onclick="createShare()">生成分享链接</button>
+  <p class="sub">网页版用于本人随时查阅与整理。就诊时请打开「Eye检查记录助手」小程序的「就诊出示」，生成限时只读链接给医生扫码查看。数值请以纸质原件为准。</p>
   <div id="shareResult" style="margin-top:14px"></div>
   <div style="margin-top:16px"><button class="btn-g" onclick="closeModal('shareModal')">关闭</button></div>
 </div></div>
@@ -299,6 +319,6 @@ a{color:var(--pri)}
   <div class="doc-prev-body" style="flex-direction:column;align-items:center"><img id="imgPreview" class="img-preview" alt="合并后的原始报告"></div>
 </div></div>
 
-<script src="/static/app.js?v=20261120b"></script>
+<script src="/static/app.js?v=20261120c"></script>
 </body>
 </html>
