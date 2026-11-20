@@ -1,0 +1,30 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/trend/trend",
+    "pages/profile/profile",
+    "pages/upload/upload",
+    "pages/record/record"
+  ],
+  "window": {
+    "navigationBarTitleText": "眼健康记录",
+    "navigationBarBackgroundColor": "#16307a",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f4f6fa",
+    "backgroundTextStyle": "light"
+  },
+  "tabBar": {
+    "color": "#94a3b8",
+    "selectedColor": "#1d4ed8",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      { "pagePath": "pages/index/index", "text": "记录" },
+      { "pagePath": "pages/trend/trend", "text": "趋势" },
+      { "pagePath": "pages/profile/profile", "text": "我的" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}
