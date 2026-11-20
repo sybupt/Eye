@@ -1,0 +1,311 @@
+.profile-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-name {
+  font-size: 34rpx;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.switch-btn {
+  font-size: 24rpx;
+  color: #1d4ed8;
+  background: #eaf0ff;
+  padding: 10rpx 22rpx;
+  border-radius: 24rpx;
+}
+
+.card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 18rpx;
+}
+
+/* 关键指标：每项单独一行，右眼蓝 / 左眼橙 */
+.kpi-table {
+  border: 1rpx solid #eef1f6;
+  border-radius: 14rpx;
+  overflow: hidden;
+}
+
+.kt-row {
+  display: flex;
+  align-items: center;
+  border-bottom: 1rpx solid #f0f3f7;
+}
+
+.kt-row:last-child { border-bottom: none; }
+
+.kt-head {
+  background: #f4f7fb;
+}
+
+.kt-name {
+  flex: 1;
+  font-size: 25rpx;
+  color: #334155;
+  padding: 16rpx 18rpx;
+}
+
+.kt-head .kt-name {
+  font-size: 22rpx;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.kt-unit {
+  font-size: 19rpx;
+  color: #b0bccb;
+  margin-left: 8rpx;
+}
+
+.kt-eye {
+  width: 150rpx;
+  text-align: center;
+  font-size: 22rpx;
+  padding: 16rpx 0;
+}
+
+.kt-head .kt-eye.od { color: #2563eb; font-weight: 500; }
+.kt-head .kt-eye.os { color: #ea580c; font-weight: 500; }
+
+.kt-cell {
+  width: 150rpx;
+  text-align: center;
+  padding: 16rpx 0;
+  position: relative;
+}
+
+.kt-val {
+  font-size: 30rpx;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.warn-dot {
+  display: inline-block;
+  font-size: 20rpx;
+  font-weight: 500;
+  color: #dc2626;
+  background: #fee2e2;
+  border-radius: 50%;
+  width: 28rpx;
+  height: 28rpx;
+  line-height: 28rpx;
+  text-align: center;
+  margin-left: 6rpx;
+  vertical-align: middle;
+}
+
+.empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8rpx;
+  padding: 48rpx 24rpx;
+}
+
+.empty-icon {
+  font-size: 72rpx;
+  color: #cbd5e1;
+  line-height: 1;
+  margin-bottom: 8rpx;
+}
+
+.matrix-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.matrix {
+  display: inline-block;
+  min-width: 100%;
+}
+
+.mrow {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1rpx solid #f0f3f7;
+}
+
+.mlabel {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  width: 176rpx;
+  min-width: 176rpx;
+  background: #fff;
+  padding: 14rpx 12rpx;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  border-right: 1rpx solid #eef1f6;
+}
+
+.mhead .mlabel {
+  background: #f4f7fb;
+  color: #475569;
+  font-size: 22rpx;
+}
+
+.mcell {
+  width: 132rpx;
+  min-width: 132rpx;
+  padding: 14rpx 8rpx;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.mhead .mcell {
+  background: #f4f7fb;
+}
+
+.mdate {
+  font-size: 24rpx;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.mtype {
+  font-size: 18rpx;
+  color: #94a3b8;
+  margin-top: 2rpx;
+}
+
+.mcyc {
+  font-size: 18rpx;
+  color: #0f766e;
+  background: #e6f5f1;
+  border-radius: 8rpx;
+  padding: 0 8rpx;
+  margin-top: 2rpx;
+}
+
+.mgroup {
+  font-size: 24rpx;
+  font-weight: 500;
+  padding: 10rpx 14rpx;
+  border-left: 6rpx solid #1d4ed8;
+}
+
+.mname {
+  font-size: 23rpx;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.munit {
+  font-size: 18rpx;
+  color: #b0bccb;
+  margin-left: 6rpx;
+}
+
+/* 指标名标题行：单独一行，浅底加粗，与左右眼数据行区分 */
+.metric-title {
+  background: #eef2f9;
+}
+
+.metric-title .mlabel {
+  background: #eef2f9;
+  align-items: center;
+}
+
+.metric-title .mcell {
+  background: #eef2f9;
+  padding: 8rpx;
+}
+
+.metric-title .mname {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* 左右眼行：标签列只放一个眼别徽章 */
+.eye-label {
+  justify-content: center;
+}
+
+.ebadge {
+  display: inline-block;
+  font-size: 20rpx;
+  color: #fff;
+  width: 36rpx;
+  height: 36rpx;
+  line-height: 36rpx;
+  text-align: center;
+  border-radius: 8rpx;
+  font-weight: 500;
+}
+
+.mval {
+  font-size: 26rpx;
+  font-weight: 500;
+}
+
+.mval.warn {
+  color: #b45309;
+}
+
+.upload-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #eaf0ff;
+  border-color: #dbe6fb;
+}
+
+.arrow {
+  color: #94a3b8;
+  font-size: 36rpx;
+}
+
+.visit-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #f0f3f7;
+}
+
+.visit-item:last-child {
+  border-bottom: none;
+}
+
+.visit-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.visit-date {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.visit-right {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.foot {
+  text-align: center;
+  font-size: 20rpx;
+  color: #b0bccb;
+  margin-top: 30rpx;
+  line-height: 1.7;
+}
